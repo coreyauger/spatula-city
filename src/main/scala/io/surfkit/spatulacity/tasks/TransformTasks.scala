@@ -22,31 +22,30 @@ object TransformTasks {
 
   val dirDateFormat = DateTimeFormat.forPattern("yyyyMMdd")
 
-  case class Csv(symbol: String, file: File)
-  case class Day(dir: File, date: DateTime, stocks: Map[String, Csv])
+  case class Day(dir: File, date: DateTime, stocks: Set[String])
 
   def toSaneInputFile(root: java.io.File, outputDir: java.io.File)(implicit system: ActorSystem, materializer: ActorMaterializer) = {
     try {
       val counter = new AtomicInteger(0)
       val days = root.listFiles.filter(_.isDirectory).sortBy(_.getName).map{ dateDir =>
         println(dateDir.getAbsolutePath)
-        val csvMap = dateDir.listFiles.map{ c =>
+        val symbols = dateDir.listFiles.map{ c =>
           val sym = c.getName.replace("table_", "").replace(".csv","")
-          sym -> Csv(sym, c)
-        }.toMap
+          sym
+        }
         val date = dirDateFormat.parseDateTime(dateDir.getName.replace("allstocks_",""))
-        Day(dateDir, date, csvMap)
+        Day(dateDir, date, symbols.toSet)
       }
-      val stocks = days.flatMap(_.stocks.values).toSet
-      println(s"stocks: ${stocks.map(_.symbol).mkString("\n")}")
+      val stocks = days.flatMap(_.stocks).toSet
+      println(s"stocks: ${stocks.mkString("\n")}")
       stocks.foreach{ stock =>
-        val filePath = Paths.get(outputDir.getAbsolutePath + "/" + stock.symbol.toUpperCase)
+        val filePath = Paths.get(outputDir.getAbsolutePath + "/" + stock.toUpperCase)
         if (!Files.exists(filePath))Files.createFile(filePath)
         println(s"write: ${filePath}")
         days.foreach{ day =>
-          day.stocks.get(stock.symbol).foreach { csv =>
+          day.stocks.foreach { stock =>
             import scala.collection.JavaConversions._
-            val lines = Files.readAllLines(Paths.get(csv.file.getAbsolutePath) )
+            val lines = Files.readAllLines(Paths.get(day.dir.getAbsolutePath + "/table_"+stock+".csv") )
             Files.write(filePath, lines.toList.mkString("", "\n","\n").getBytes(), StandardOpenOption.APPEND)
             if (counter.addAndGet(1) % 10 == 0) print(".")
           }
