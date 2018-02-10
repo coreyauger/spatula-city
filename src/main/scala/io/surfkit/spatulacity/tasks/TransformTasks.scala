@@ -25,7 +25,7 @@ object TransformTasks {
   case class Csv(symbol: String, file: File)
   case class Day(dir: File, date: DateTime, stocks: Map[String, Csv])
 
-  def toSaneInputFile(root: java.io.File, outputDir: java.io.File, dropUntil: Option[String] = None)(implicit system: ActorSystem, materializer: ActorMaterializer) = {
+  def toSaneInputFile(root: java.io.File, outputDir: java.io.File)(implicit system: ActorSystem, materializer: ActorMaterializer) = {
     try {
       val counter = new AtomicInteger(0)
       val days = root.listFiles.filter(_.isDirectory).sortBy(_.getName).map{ dateDir =>
@@ -37,14 +37,8 @@ object TransformTasks {
         val date = dirDateFormat.parseDateTime(dateDir.getName.replace("allstocks_",""))
         Day(dateDir, date, csvMap)
       }
-      val stocks =
-        dropUntil match{
-          case None => days.flatMap(_.stocks.values).toSet
-          case Some(until) => days.flatMap(_.stocks.values).toSet.dropWhile(_.symbol.toUpperCase != until.toUpperCase )
-        }
-
-      println(s"the directory is: ${days}")
-      println(s"stocks: ${stocks}")
+      val stocks = days.flatMap(_.stocks.values).toSet
+      println(s"stocks: ${stocks.map(_.symbol).mkString("\n")}")
       stocks.foreach{ stock =>
         val filePath = Paths.get(outputDir.getAbsolutePath + "/" + stock.symbol.toUpperCase)
         if (!Files.exists(filePath))Files.createFile(filePath)

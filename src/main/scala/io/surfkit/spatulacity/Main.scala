@@ -30,7 +30,7 @@ object Main extends App {
         case CommandParser.Mode.transform =>
           cmd.transform match{
             case "sanity" =>
-              TransformTasks.toSaneInputFile(cmd.file, cmd.out, if(cmd.symbol == "")None else Some(cmd.symbol) )
+              TransformTasks.toSaneInputFile(cmd.file, cmd.out )
             case x =>
               println(s"Unknown transform: ${x}")
           }
