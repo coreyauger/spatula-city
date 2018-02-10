@@ -42,11 +42,13 @@ object TransformTasks {
         val filePath = Paths.get(outputDir.getAbsolutePath + "/" + stock.toUpperCase)
         if (!Files.exists(filePath))Files.createFile(filePath)
         println(s"write: ${filePath}")
-        days.foreach{ day =>
-          import scala.collection.JavaConversions._
-          val lines = Files.readAllLines(Paths.get(day.dir.getAbsolutePath + "/table_"+stock+".csv") )
-          Files.write(filePath, lines.toList.mkString("", "\n","\n").getBytes(), StandardOpenOption.APPEND)
-          if (counter.addAndGet(1) % 10 == 0) print(".")
+        days.foreach{
+          case day if day.stocks.contains(stock) =>
+            import scala.collection.JavaConversions._
+            val lines = Files.readAllLines(Paths.get(day.dir.getAbsolutePath + "/table_"+stock+".csv") )
+            Files.write(filePath, lines.toList.mkString("", "\n","\n").getBytes(), StandardOpenOption.APPEND)
+            if (counter.addAndGet(1) % 10 == 0) print(".")
+          case _ => // ignore..
         }
       }
 
