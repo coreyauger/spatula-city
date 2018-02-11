@@ -23,6 +23,7 @@ val akkaV = "2.5.3"
 
 libraryDependencies ++= Seq(
   "joda-time"                     % "joda-time"                          % "2.9.9",
+  "com.github.nscala-time"       %% "nscala-time"                        % "1.8.0",
   "com.typesafe.akka"            %% "akka-actor"                         % akkaV,
   "com.typesafe.akka"            %% "akka-stream"                        % akkaV,
   "com.typesafe.akka"            %% "akka-slf4j"                         % akkaV,

@@ -16,10 +16,17 @@ object CommandParser {
     val none = Mode("none")
     val transform = Mode("transform")
     val ml = Mode("ml")
+    val stats = Mode("stats")
   }
 
-  case class CmdConfig(file: File = new File("."), out: File = new File("."), debug: Boolean = false, transform: String = "",
-                       mode: Mode = Mode.none, files: Seq[File] = Seq(), symbol: String = "")
+  case class CmdConfig(file: File = new File("."),
+                       out: File = new File("."),
+                       quantquote: File = new File("."),
+                       kibot: File = new File("."),
+                       debug: Boolean = false,
+                       transform: String = "",
+                       mode: Mode = Mode.none,
+                       symbol: String = "")
 
   private[this] val parser = new scopt.OptionParser[CmdConfig]("spatula-city") {
     head("spatula-city", "0.0.1-SNAPSHOT")
@@ -45,6 +52,16 @@ object CommandParser {
           c.copy(transform = "sanity", symbol = x) ).text("skip until")
       )
 
+    cmd("stats").required().action( (_, c) => c.copy(mode = Mode.stats) ).
+      text("stats is a command.").
+      children(
+        opt[File]("quantquote").abbr("q").action( (x, c) =>
+          c.copy(quantquote = x) ).text("quantquote directory"),
+        opt[File]("kibot").abbr("k").action( (x, c) =>
+          c.copy(kibot = x) ).text("kibot directory"),
+        opt[File]("out").abbr("o").action( (x, c) =>
+          c.copy(out = x) ).text("output directory")
+      )
   }
 
 

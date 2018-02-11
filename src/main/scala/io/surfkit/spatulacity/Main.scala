@@ -35,6 +35,9 @@ object Main extends App {
               println(s"Unknown transform: ${x}")
           }
 
+        case CommandParser.Mode.stats =>
+          StatsTasks.generateStats(cmd.quantquote, cmd.kibot, cmd.out)
+
         case x => println(s"Unknown command '${x}'.")
       }
     }
